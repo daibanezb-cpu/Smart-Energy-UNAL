@@ -7,6 +7,7 @@ from typing import List, Optional
 from sqlalchemy import func
 from typing import List, Optional, Any
 import asyncio
+import pytz
 
 
 from . import database, models, schemas, crud, auth, websocket_manager, config
@@ -56,8 +57,9 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 @app.post("/api/measurements", status_code=201)
 async def receive_measurement(payload: schemas.MeasurementPayload, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     # Validate timestamp
+    bogota = pytz.timezone("America/Bogota")
     if payload.timestamp is None:
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(bogota)
     else:
         timestamp = payload.timestamp
 
@@ -154,6 +156,7 @@ async def ws_realtime(ws: WebSocket):
 @app.get("/api/profile", response_model=schemas.UserOut)
 def profile(current_user = Depends(auth.get_current_user)):
     return current_user
+
 
 
 
